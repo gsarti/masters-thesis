@@ -1,0 +1,33 @@
+.correction {
+  background-color: #CCCCFF; /* #FFFFFF if corrections should not be highlighted */
+  border-radius: 4px;
+  padding-right: 4px;
+  padding-left: 4px;
+}
+
+.custompar {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.verysmall {
+  font-size: small;
+}
+
+.normal code {
+  padding: 0.2em 0 0.2em 0;  
+}
+
+/* don't use line breaks in the header shown on hover */
+.book-header h1 br {
+  display: none;
+}
+
+/* Hide edit button from GitBook output */
+a[title="Edit"] {
+  display: none !important;
+}

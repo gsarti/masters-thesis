@@ -1,0 +1,119 @@
+---
+#####################
+## thesis metadata ##
+#####################
+title: |
+  Interpreting Neural Language Models \
+  for Linguistic Complexity Assessment
+author: Gabriele Sarti
+college: Dipartimento di Matematica e Geoscienze
+degree: Laurea Magistrale in Data Science and Scientific Computing
+degreedate: December 2020
+universityname: Università degli Studi di Trieste
+departmentname: Dipartimento di Matematica e Geoscienze
+degreedef: Tesi di Laurea Magistrale
+degreename: Corso di Laurea Magistrale in Data Science and Scientific Computing
+degreeclass: LM-35
+academicyear: Anno Accademico 2019 - 2020
+advisorname: Prof. Davide Crepaldi
+coadvisorname: Dott. Felice Dell'Orletta
+abstract: |
+  `r paste(readLines("extra/_Abstract.Rmd"), collapse = '\n  ')`
+acknowledgements: |
+  `r paste(readLines("extra/_Acknowledgements.Rmd"), collapse = '\n  ')`
+dedication: false
+abbreviations: "extra/abbreviations" # path to .tex file with abbreviations
+
+############################
+## extra GitBook metadata ##
+############################
+description: |
+  This is a test description 
+url: 'https://gsarti.com/master-thesis' # URL of book's website
+github-repo: "gsarti/interpreting-complexity"
+cover-image: "figures/cover.png"
+apple-touch-icon: "figures/icons/apple-icon.png"
+favicon: "figures/icons/favicon.ico"
+
+
+#######################
+## bibliography path ##
+#######################
+bibliography: 
+ - references/compling.bib
+ - references/cogsci.bib
+ - references/psyling.bib
+ - references/ling.bib
+ - references/ml.bib
+ - references/misc.bib
+bibliography-heading-in-pdf: References
+
+#####################
+## PDF formatting  ##
+#####################
+do-abstract: true
+abstractseparate: false  # include front page w/ abstract for examination schools?
+bib-humanities: true   #set to true if you want in-text references formatted as author-year
+doi-in-bibliography: false #set to true if you want DOI's to be shown in the bibliography
+url-in-bibliography: false #set to true if you want DOI's to be shown in the bibliography. By default, it is linked under the publication name.
+draft: false # add as DRAFT mark in the footer?
+page-layout: 'nobind' #'nobind' for PDF output (equal margins), 'twoside' for two-sided binding (mirror margins and blank pages), leave blank for one-sided binding (left margin > right margin)
+hidelinks: false #if false, the PDF output highlights colored links - you will probably want to set this to true for PDF version you wish to physically print
+toc-depth: 3 # depth of heading to include in table of contents
+lof: true # list of figures in back matter?
+lot: true # list of tables in back matter?
+mini-toc: false  # mini-table of contents at start of each chapter? (this just prepares it; you must also add \minitoc after the chapter titles)
+mini-lot: false  # mini-list of tables by start of each chapter?
+mini-lof: false  # mini-list of figures by start of each chapter?
+
+params:
+  corrections: true # set false to stop applying blue background to blocks of corrections
+
+#####################
+## output options  ##
+#####################
+output:
+  bookdown::pdf_book:
+    template: templates/template.tex
+    keep_tex: true
+    citation_package: biblatex
+    extra_dependecies: subfig
+    pandoc_args: ["--lua-filter=scripts_and_filters/custom_filters.lua"]
+  bookdown::gitbook:
+    css: templates/style.css
+    config:
+      toc:
+        scroll_highlight: yes
+        after: |
+          <li><a href="https://gsarti.com">Back to my website</a></li>
+      edit:
+      info: no
+      #download: [["Sarti_2020_Interpreting_NLMs_for_LCA.pdf", "PDF"]]
+      sharing:
+        facebook: yes
+        twitter: yes
+        github: yes
+        linkedin: yes
+        all: false
+  bookdown::word_document2:
+    toc: true   
+link-citations: true
+documentclass: book
+always_allow_html: true
+---
+
+
+```{r create_chunk_options, include=FALSE, eval=knitr::is_latex_output()}
+source('scripts_and_filters/create_chunk_options.R')
+source('scripts_and_filters/wrap_lines.R')
+```
+<!--
+Include the create_chunk_options chunk above at the top of your index.Rmd file
+This will include code to create additional chunk options (e.g. for adding author references to savequotes)
+and to make sure lines in code soft wrap
+If you need to create your own additional chunk options, edit the file scripts/create_chunk_options.R
+-->
+
+
+```{r introduction, child = '_00-Introduction.Rmd'}
+```

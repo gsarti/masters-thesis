@@ -1,0 +1,23 @@
+The majority of the following work was carried out during the COVID-19 pandemic, an incredibly hard time for our global society as a whole. For this reason, I would like to begin by acknowledging my great privilege in being able to entirely devote my past year's efforts to complete this research work without having to worry about me and my family's health and sustenance.
+
+\vspace{5mm}
+
+This thesis would not have been possible without the support of many people, and especially without the help and guidance of my supervisors. Davide and Felice, I would like to thank you with all my heart for being incredibly supportive despite the adverse circumstances and always making me feel a valued part of your labs and your research activities.
+
+\vspace{5mm}
+
+I would also like to acknowledge the dedication of professors and fellow students at the master's degree in Data Science and Scientific Computing in creating an environment that is at the same time pleasantly familiar and incredibly stimulating. I could not have asked for a better company during those two years. A special mention to the friends of Cacaopoli for the amazing moments passed together, and to my AI Student Society colleagues for believing in my dream of creating an AI student community in Trieste, and for selflessly bringing it to life to the benefit of future cohorts of students in AI and Data Science.
+
+\vspace{5mm}
+
+On the research side, I would like to sincerely thank all the members of the ItaliaNLP Lab in Pisa, who welcomed me in their group for my internship in 2019, first introduced me to natural language processing research, and ultimately motivated me in pursuing a doctorate after the end of this master's degree. My thanks also go to Prof. Elizabeth Schotter for her excellent introductory course to eye-tracking practices in cognitive science that immensely helped me to develop fundamental intuitions about gaze movements during reading, and to Dr. Nora Hollenstein for her precious advice on using gaze metrics in NLP studies.
+
+\vspace{5mm}
+
+I cannot be more thankful for the support of my close friends, which made these difficult times bearable for me. A special thanks to Laura, Karen, Alice, and Mattia, with whom I felt close even when we were physically far, and to Vale, for being the best thing this pandemic has brought in my life.
+
+\vspace{5mm}
+
+In conclusion, I am truly grateful to my parents and my family for always conciliating hard work with kindness, supporting me at all times, and always making me strive for the best. I aspire to be like you one day.
+
+

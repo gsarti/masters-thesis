@@ -1,0 +1,130 @@
+---
+output:
+  bookdown::pdf_document2:
+    template: ../templates/brief_template.tex
+  bookdown::word_document2: default
+  bookdown::html_document2: default
+documentclass: book
+bibliography: ../references.bib
+---
+
+# **Gaze-informed Models for Cognitive Processing Prediction** {#chap:ex3}
+\minitoc <!-- this will include a mini table of contents-->
+
+\chaptermark{Gaze-informed Models for Cognitive Processing Prediction}
+
+> This final experimental chapter aims to study the syntactic generalization capabilities of neural language models by evaluating their performances over atypical linguistic constructions. In particular, architectures pre-trained with masked and causal language modeling are evaluated in their ability to predict garden-path effects on three test suites taken from the SyntaxGym psycholinguistic benchmark. First, the results of previous studies using GPT-2 surprisal to predict garden-path effects are reproduced, and a conversion coefficient is used to evaluate GPT-2 surprisal in terms of human reading times delays. Two neural language models are fine-tuned over gaze metrics from multiple eye-tracking corpora in a multitask token-level setting. Gaze metric predictions on garden-path sentences are evaluated to see whether gaze data fine-tuning can improve garden-path effects prediction. Results highlight how GPT-2 surprisals overestimate the magnitude of MV/RR and NP/Z garden-path effects, and fine-tuning procedures on gaze metrics prediction over typical linguistic structures do not benefit the generalization capabilities of neural language models on out-of-distribution cases like garden-path sentences.
+
+Human behavioral data collected during naturalistic reading can provide useful insights into the primary sources of processing difficulties during reading comprehension. Multiple cognitive processing theories were formulated to account for the sources of such difficulties (see Section \@ref(subchap:garden-path)). Notably, **surprisal theory** [@hale-2001-probabilistic; @levy-2008-expectation] suggests that processing during reading is the direct result of a single mechanism, that is, the shift in readers' probability distribution over all possible parses. To evaluate whether this perspective holds empirically, language models defining a probability distribution over a vocabulary given previous context (RNNs in @elman-1991-distributed and @mikolov-etal-2010-recurrent, recently Transformers in @hu-etal-2020-systematic) are commonly used to obtain accurate predictability estimates that can directly be compared to behavioral recordings (e.g. gaze metrics) acting as proxies of human cognitive processing.
+
+A computational model that consistently mimics human processing behaviors would provide strong evidence of cognitive processing's underlying probabilistic-driven nature. For this reason, many studies in the fields of syntax and psycholinguistics have focused on probing the abilities of language models to highlight phenomena related to reading difficulties [@linzen-etal-2016-assessing; @gulordava-etal-2018-colorless; @futrell-etal-2019-neural]. Peculiar constructions like garden-path sentences are often used in this context to evaluate the generalization capabilities of language models for two main reasons. First, garden-path sentences are rare in naturally-occurring text. As such, they represent out-of-distribution examples for any language model trained on conventional data and can be used to test the latter's generalization capabilities. Secondly, researchers nowadays have access to reasonably-sized literature describing the impact of garden-path effects on cognitive processing proxies such as gaze recordings, with articles being often released alongside publicly-available resources for reproducible evaluation [@prasad-linzen-2019-self; @prasad-linzen-2019-much] and recently even ad-hoc benchmarks [@gauthier-etal-2020-syntaxgym].
+
+This final experimental chapter evaluates the ability of neural language models in predicting garden-path effects observed on human subjects, using language modeling surprisal and eye-tracking metrics elicited respectively before and after multitask token-level eye-tracking fine-tuning for garden-path effects prediction. Specifically, an autoregressive (GPT-2, @radford-etal-2019-language) and a masked language model (ALBERT, @lan-etal-2020-albert) are first tested over three garden-path test suites that are part of the SyntaxGym benchmark to evaluate whether their language modeling surprisal before and after eye-tracking fine-tuning (ET) can be used to predict the presence and the magnitude of garden-path effects over disambiguating regions. In particular, GPT-2 and GPT-2 XL results presented in @hu-etal-2020-systematic are reproduced. Finally, the same procedure is repeated using predicted eye-tracking scores predicted by models after fine-tuning instead of language modeling surprisal, following the intuition that an accurate model of gaze measurements should predict such phenomena correctly.
+
+While the usage of surprisal is a common practice for garden-path effect prediction, leveraging eye-tracking scores predicted by a neural language model trained for this purpose is a novel research direction that is deemed interesting as a way to combine the predictive power of modern language models and the strong connection between cognitive processing and gaze metrics. While predicted gaze metrics for garden-path evaluation were used in concurrent studies [@schjindel-linzen-2020-single], the approach adopted by this work can be regarded as complementary evidence since eye-tracking metrics predictions are produced as results of an end-to-end supervised fine-tuning procedure involving a neural language model rather than being derived from surprisal values through a conversion coefficient. Findings suggest that, while surprisal scores from autoregressive models accurately reflect garden-path structures both before and after fine-tuning, gaze metrics predictions produced by fine-tuned models do not account for the temporary syntactic ambiguity that characterizes such sentences and makes them difficult to process.
+
+[Contributions]{.custompar} This study validates the performances of standard and gaze-informed Transformed-based neural language models for garden-path effects prediction. In particular:
+
+- It reproduces the GPT-2 performances on garden-path test suites reported by @gauthier-etal-2020-syntaxgym and highlights how GPT-2 overestimates reading delays caused by garden-path effects on MV/RR and NP/Z constructions.
+
+- It highlights masked language models' inability to consistently predict garden-path effects, using language modeling surprisal and gaze metrics predictions.
+
+- It introduces a novel gaze metrics multitask token-level fine-tuning approach that, despite being accurate for predicting eye-tracking scores on standard constructions, does not improve models' performances on garden-path effects predictions.
+
+## Experimental Setup {#subchap:ex3-setup}
+
+[Fine-tuning data]{.custompar} As for the gaze metrics model presented in the previous chapter, all eye-tracking datasets presented in Section \@ref(subsubchap:eye-tracking) were merged and used to fine-tune neural language models using the multitask token-level approach described in Appendix \@ref(app:et-modeling). Only the training variant without embedding concatenation (referred to as "surprisal" in the appendix) was evaluated on garden-path test suites given comparable modeling performances.
+
+[Models]{.custompar} Two variants of GPT-2 having respectively 117 million and 1.5 billion parameters are evaluated in terms of surprisal-driven predictability, alongside an ALBERT model with 11 million parameters.^[The `gpt2`, `gpt2-xl` and `albert-base-v2` pre-trained models from 🤗 `transformers` [@wolf-etal-2020-huggingface].] Only the small GPT-2 model and the ALBERT model were fine-tuned for gaze metric predictions due to limited computational resources.
+
+[Evaluation data]{.custompar} SyntaxGym [@gauthier-etal-2020-syntaxgym] is a recently introduced online platform designed to make the targeted evaluation of language models on psycholinguistic test suites both accessible and reproducible. The MV/RR and NP/Z test suites containing garden paths from @futrell-etal-2019-neural are used in the context of this work. The MV/RR test suite consists of 28 groups containing a sentence with a main verb/reduced relative ambiguity and its non-ambiguous rewritings. In comparison, the NP/Z test suites consist of 24 groups containing a sentence with a nominal/zero predicate ambiguity, produced either by a misinterpreted transitive use of a verb (Verb Transitivity) or the absence of an object for the main verb (Overt Object). Examples (3), (4), and (5) from Section \@ref(subchap:garden-path) follow the format used in the three SyntaxGym test suites used in this work.
+
+(ref:gpt2-surprisal-caption-latex) Average GPT-2 surprisal predictions and examples for the three SyntaxGym test suites. Star marks the garden-path disambiguator (bold in examples), and bars show 95% confidence intervals.
+
+(ref:gpt2-surprisal-caption-gitbook) Average GPT-2 surprisal predictions and examples for the NP/Z Ambiguity with Verb Transitivity (top), the NP/Z Ambiguity with Overt Object (middle), and the MV/RR Ambiguity (bottom) SyntaxGym test suites used in this study. Star marks the garden-path disambiguator (bold in examples), and bars show 95% confidence intervals.
+
+```{r out.width = "100%", fig.align='center', fig.cap=ifelse(knitr::is_html_output(), "(ref:gpt2-surprisal-caption-gitbook)", "(ref:gpt2-surprisal-caption-latex)"), label="gpt2-surprisal", echo=FALSE, fig.ncol=1, fig.nrow=3, fig.subcap=c('NP/Z Ambiguity (Verb Transitivity)', 'NP/Z Ambiguity (Overt Object)', 'MV/RR Ambiguity')}
+include_graphics('figures/5_gpt2_surprisal_npz_ambig.png', auto_pdf=TRUE)
+include_graphics('figures/5_gpt2_surprisal_npz_obj.png', auto_pdf=TRUE)
+include_graphics('figures/5_gpt2_surprisal_mvrr.png', auto_pdf=TRUE)
+```
+
+## Experimental Evaluation {#subchap:ex3-experiments}
+
+For the first part of the experiments, the smallest version of the model GPT-2 is used. Figure \@ref(fig:gpt2-surprisal) reproduces the original setting tested by @hu-etal-2020-systematic, showing how predictability estimates produced by the model correctly individuate the presence of garden-path effects.^[Similar plots are available on the SyntaxGym website: http://syntaxgym.org/viz/individual] Surprisal values are computed using a pre-trained GPT-2 for all tokens in all sentences of the three test suites. Then, those values are aggregated by summing them across all tokens composing a sentence region. For example, for the NP/Z Ambiguity test suite entry shown in example (a) the region "Start" will be associated with the sum of surprisal estimates for all subword tokens in the sequence *While the students*. It is important to note that the four variants of the same sentence have only minimal variations, but only one of those (the underlined one in all examples) is a garden-path sentence. After computing GPT-2 surprisal scores for all regions of all sentences in the test sets, those are averaged region-wise across sentences belonging to the same test set to obtain the three plots presented in Figure \@ref(fig:gpt2-surprisal). The star symbol is used to mark the disambiguating region of garden-path sentences, making evident how predictability estimates are significantly lower (i.e., higher surprisal values) for those and correctly predict the presence of a garden-path effect in most settings and for all the three garden-path variants.
+
+### Estimating Magnitudes of Garden-path Delays {#subsubchap:ex3-magnitudes}
+
+An important part of evaluating model predictions over garden-path sentences is determining whether the increase in surprisal scores correctly captures the effect's magnitude. @schjindel-linzen-2020-single perform this evaluation on RNN language models, finding that they vastly underestimate garden-path effects for MV/RR and NP/Z ambiguities. In their approach, @schjindel-linzen-2020-single estimate the surprisal-to-reading-times conversion rate at 2ms per surprisal bit by fitting a linear mixed-effect model on relevant factors (surprisal, entropy, word length, among others) relative to a word and its three preceding words to account for spillover effects. The approach adopted in this work is different in that it stems from the empirical relation between surprisal scores produced by GPT-2 and reading times produced by eye-tracking experiments' participants. Figure \@ref(fig:surprisal-ratios) presents the median values over words for the ratio between gaze metrics recorded by participants and GPT-2 surprisal estimates, with the red cross indicating the average median surprisal-to-metric ratio $C_{\text{corpus}}^{\text{metric}}$ computed across all participants of a corpus. The following formula is used to produce the surprisal-to-reading-times conversion coefficient:
+\begin{equation}
+C_{S\rightarrow RT} = w_1 \cdot C_{\text{GECO}}^{\text{FPD}} + w_2 \cdot C_{\text{Dundee}}^{\text{FPD}} + w_3 \cdot C_{\text{ZuCo NR}}^{\text{FPD}} + w_4 \cdot C_{\text{ZuCo SR}}^{\text{FPD}} + w_5 \cdot C_{\text{ZuCo 2.0}}^{\text{FPD}}
+\end{equation}
+with $w = [.4, .45, .05, .05, .05]$ being the weighting coefficients representing the proportion of each corpus' tokens over the total amount of available gaze-annotated tokens. 
+
+(ref:surprisal-ratios-caption) Median scores for the ratio between gaze metrics units and GPT-2 surprisal estimates across all participants of all eye-tracking datasets used in this study. The red cross shows the average across participants of a single dataset. Units are in ms for durations, % for FXP, and raw counts for FXC.
+
+```{r out.width= "100%", fig.align='center', fig.cap='(ref:surprisal-ratios-caption)', label="surprisal-ratios", echo=FALSE}
+knitr::include_graphics('figures/5_surprisal_ratios.png', auto_pdf=TRUE)
+```
+
+The resulting value for the conversion coefficient is $27.7$, i.e., *each surprisal bit predicted by GPT-2 accounts for roughly 27.7 milliseconds in first pass duration* (30.3ms using TFD). When applied to the average effects predicted by GPT-2 in Figure \@ref(fig:gpt2-surprisal), it leads to an estimated delay of roughly 64ms for the MV/RR setting and 166ms and 194ms for the NP/Z Ambiguity and NP/Z Overt Object settings, respectively. These computed delays overestimate the literature's effects: @prasad-linzen-2019-self and @prasad-linzen-2019-much, for example, report an average garden-path effect of 22ms and 27ms for MV/RR and NP/Z variants, respectively. However, it should be mentioned that precedent studies found higher delays for NP/Z structures: @grodner-etal-2003-against find a 64ms delay on disambiguating words, and @sturt-etal-1999-structural's delays of 152ms per word are close to the estimates produced by GPT-2 surprisal predictions. Overall, using models' surprisal on gaze-annotated sentences to directly compute a conversion coefficient produces values that correctly identify delays on disambiguating regions and overestimate the magnitude of garden-path effects conversely to what was found by @schjindel-linzen-2020-single. Even with an adjustment of the conversion coefficient to match MV/RR estimates with @prasad-linzen-2019-self findings, the NP/Z effect prediction would still be much larger than the empirically-observed values collected in comparable settings.
+
+### Predicting Delays with Surprisal and Gaze Metrics {#subsubchap:ex3-predicting}
+
+The other perspective explored in this study is evaluating whether gaze metric predicted by models fine-tuned on eye-tracking corpora annotations can correctly estimate the presence and magnitude of garden-path effects and how they compare to surprisal-driven approaches. Table \@ref(tab:gp-results) presents the accuracy of multiple pre-trained Transformer-based language models in respecting a set of three conditions taken from @hu-etal-2020-systematic for each SyntaxGym test suite, namely:
+\begin{equation}
+V_d(b) < V_d(a);\qquad V_d(c) < V_d(a);\qquad V_d(c)-V_d(d) < V_d(a)-V_d(b)
+\end{equation}
+Where $V_d(a)$ corresponds to the value, either in terms of surprisal or gaze metrics, assigned by a model to the disambiguating region $d$ of sentence $a$, and $a,b,c,d$ are the same sentence's variants for each test suite presented in examples (3),(4) and (5) of Section \@ref(subchap:garden-path). Accuracy is computed as the proportion of items in the test suite on which the language model's predictions conform to the respective criterion. The first three models (GPT-2, GPT-2 XL, and ALBERT) are the pre-trained variants of the three models presented in Table \@ref(subchap:ex3-setup) without additional fine-tuning. Instead, the GPT-2 ET and ALBERT ET models correspond to the same GPT-2 and ALBERT models as before after a multitask token-level fine-tuning on gaze metrics for all the aggregated corpora. The top part of Table \@ref(tab:gp-results) shows the five models' performances while using region-aggregated surprisals as predictors. Focusing on the GPT-2 variants, it can be observed that they all achieve considerably high scores on all evaluated conditions. Conversely, ALBERT masked language models poorly fit the specified criteria. This fact can be intuitively explained by accounting for the different training and evaluation setup used for the two architectures. GPT-2 models are likely to produce high surprisal estimates for garden-path sentences since, processing the input autoregressively and having access only to previous tokens, they incur in the same syntactic ambiguities faced by human readers.
+
+```{r echo=FALSE, message=FALSE}
+library(dplyr)
+library(kableExtra)
+gp_results <- data.frame(
+  type = c(rep("Surprisal", times=5), rep("Eye-tracking metrics", times=12)),
+  models = c("GPT-2", "GPT-2 XL", "ALBERT", "GPT-2 ET", "ALBERT ET", rep("GPT-2 ET", times=6), rep("ALBERT ET", times=6)),
+  metric = c(rep("", times=5), rep(c("FFD", "FPD", "FXP", "FXC", "TFD", "TRD"), times=2)),
+  npz_ambig_1 = c(0.96, 1.00, 0.21, 0.96, 0.42, 0.29, 0.13, 0.38, 0.75, 0.50, 0.67, 0.67, 0.54, 0.28, 0.63, 0.75, 0.96),
+  npz_ambig_2 = c(0.92, 0.96, 0.63, 0.88, 0.42, 0.38, 0.46, 0.50, 0.50, 0.33, 0.46, 0.33, 0.41, 0.46, 0.46, 0.38, 0.42),
+  npz_ambig_3 = c(0.88, 1.00, 0.58, 0.79, 0.58, 0.46, 0.67, 0.42, 0.42, 0.46, 0.54, 0.42, 0.33, 0.29, 0.50, 0.29, 0.42),
+  npz_obj_1 =   c(0.96, 0.96, 0.21, 0.96, 0.42, 0.29, 0.13, 0.42, 0.75, 0.50, 0.63, 0.42, 0.38, 0.54, 0.38, 0.50, 0.63),
+  npz_obj_2 =   c(1.00, 1.00, 0.54, 1.00, 0.75, 0.54, 0.50, 0.41, 0.63, 0.58, 0.25, 0.83, 0.79, 0.38, 0.67, 0.88, 0.75),
+  npz_obj_3 =   c(1.00, 1.00, 0.46, 0.96, 0.62, 0.42, 0.46, 0.42, 0.46, 0.75, 0.54, 0.67, 0.75, 0.63, 0.71, 0.83, 0.50),
+  mvrr_1 =      c(1.00, 0.93, 0.61, 0.96, 0.50, 0.86, 0.86, 0.71, 0.92, 0.79, 0.29, 0.68, 0.75, 0.29, 0.86, 0.79, 0.79),
+  mvrr_2 =      c(0.89, 0.75, 0.54, 0.79, 0.64, 0.57, 0.54, 0.43, 0.46, 0.43, 0.39, 0.61, 0.57, 0.50, 0.43, 0.61, 0.50),
+  mvrr_3 =      c(0.82, 0.75, 0.38, 0.82, 0.64, 0.50, 0.36, 0.57, 0.54, 0.39, 0.50, 0.50, 0.46, 0.43, 0.39, 0.54, 0.57)
+)
+gp_results %>%
+mutate_if(is.numeric, function(x) {
+  cell_spec(x, bold = x == max(x))
+}) %>%
+kable(
+  booktabs=T, caption="Results of experiments using surprisal and gaze metrics as predictors for garden-path effects on the three SyntaxGym test suites.", 
+  col.names = c(rep("", times=3), paste("Cond. ",rep(1:3, times=3), c(footnote_marker_number(1:3), footnote_marker_alphabet(1:3), footnote_marker_symbol(1:3)), sep=" ")), 
+  label = "gp-results", 
+  align = c(rep('l', times=3), rep('c', times=9)), 
+  linesep = "", escape = FALSE
+) %>% 
+  kable_styling(font_size = 11, latex_options = c("hold_position")) %>%
+  column_spec(6, border_right = T) %>%
+  column_spec(9, border_right = T) %>%
+  add_header_above(c(rep("", times=3), "NP/Z Verb Transitivity" = 3, "NP/Z Overt Object" = 3, "MV/RR Ambiguity" = 3), bold=TRUE, escape=F) %>%
+  collapse_rows(
+    1:2, row_group_label_position = 'stack',
+    latex_hline = 'custom', custom_latex_hline = 1:2) %>% 
+  footnote(general = "Description of the evaluated conditions",
+    number = c("[Ambig. No Comma] > [Ambig. Comma]; ", "[Ambig. No Comma] > [Unambig. No Comma]; ", "[Ambig. No Comma] - [Ambig. Comma] > [Unambig. No Comma] - [Unambig. Comma]"),
+    alphabet = c("[No Obj. No Comma] > [No Obj. Comma]; ", "[No Obj. No Comma] > [Obj. No Comma]; ", "[No Obj. No Comma] - [No Obj. Comma] > [Obj. No Comma] - [Obj. Comma]"),
+    symbol = c("[Reduced Ambig.] > [Unred. Ambig.]; ", "[Reduced Ambig.] > [Reduced Unambig.]; ", "[Reduced Ambig.] - [Unred. Ambig.] > [Reduced Unambig.] - [Unred. Unambig.]"),
+    general_title = "", number_title = "NP/Z Verb Trans.: ",
+    alphabet_title = "NP/Z Overt Obj.: ", symbol_title = "MV/RR Ambig.: ", threeparttable = T,  footnote_as_chunk = T, title_format=c("italic", "underline"), fixed_small_size = T) %>%
+landscape()
+```
+
+Conversely, ALBERT-like masked language models have access to bidirectional contexts and are not exposed to the ambiguity. It is interesting to observe that while the eye-tracking fine-tuning procedure appears to hamper GPT-2 surprisal performances, it generally improves the ALBERT model's accuracy. This phenomenon may be due to the sequential nature of reading that is being captured by gaze metrics and transferred to the bidirectional ALBERT model as a useful bias for sequential processing. The same procedure performs suboptimally, instead, when associated with an inherently autoregressive model like the GPT-2 decoder 
+
+The bottom part of Table \@ref(tab:gp-results) presents the two ET-trained models' accuracy in matching criteria using predicted gaze metrics. For both GPT-2 and ALBERT, it can be observed that gaze metrics vastly underperform in accuracy terms. We can conclude that, despite the conceptual relation between gaze metrics and predictability observed in humans, the predictions of fine-tuned model cannot generalize to unseen settings, and as such *eye-tracking predictions obtained after a fine-tuning on standard constructions do not appear useful to individuate or estimate the magnitude of garden-path effects*. This observation suggests that fine-tuned models stick to predicting gaze metric values that are the most likely for each specific token, regardless of the surrounding context's ambiguities. Plots in Appendix \@ref(app:garden-paths-et) present the region-aggregated average scores for all metrics predicted by GPT-2 ET in the same format as before and show how predictions on the disambiguator regions are unaffected by the presence of previous ambiguities.
+
+## Summary {#subchap:ex3-summary}
+
+This chapter focused on two perspectives related to the evaluation of neural language models for garden-path effects prediction. First, promising results from previous studies using GPT-2 surprisal to evaluate predictability are reproduced, and language modeling surprisal estimates are converted to reading times using a conversion coefficient. Resulting predictions vastly overestimate the magnitude of garden-path effects in all settings, suggesting the presence of additional mechanisms besides predictability in shaping cognitive processing in the presence of ambiguous constructions like garden-path sentences. This evidence is further supported by the second experimental perspective, in which reading times for garden-path sentences are predicted by models fine-tuned on eye-tracking annotations on corpora containing standard constructions. Results suggest that predicted gaze metrics poorly estimate the presence of garden-path effects over disambiguating regions, suggesting that fine-tuned models are once again incapable of out-of-the-box generalization beyond training settings.

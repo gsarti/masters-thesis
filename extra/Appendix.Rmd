@@ -1,0 +1,232 @@
+`r if(knitr:::is_latex_output()) '\\startappendices'`
+
+`r if(!knitr:::is_latex_output()) '# (APPENDIX) Appendix {-}'` 
+
+# Linguistic Features {#app:ling-feats}
+
+The following list of features was used in the context of Chapter \@ref(chap:ex1) experiments and is a summary of the full set of features presented in @brunato-etal-2020-profiling:
+
+## Raw Text Properties and Lexical Variety
+
+- **Sentence length** (*n_tokens*): Length of the sentence in terms of number of tokens.
+
+- **Word length** (*char_per_tok*): Average number of characters per word in a sentence, excluding punctuation.
+
+- **Type/Token Ratio for forms and lemmas** (*ttr_form, ttr_lemma*): Ratio between the number of lexical types and the number of tokens within a sentence.
+
+## Morpho-syntacting Information
+
+- **Distribution of grammatical categories** (*upos_dist_\*, xpos_dist_\**): Percentage distribution in the sentence of the 17 core part-of-speech categories present in the Universal POS tagset (adjective, adverb, interjection, noun, proper noun, verb, adposition, auxiliary, coordinating conjunction, determiner, numeral, particle, pronoun and subordinating conjunction, punctuation, and symbols).
+
+- **Lexical density** (*lexical_density*): Ratio of content words (verbs, nouns, adjectives, and adverbs) over the total number of words in a sentence.
+
+- **Inflectional morphology** (*aux_mood_\*, aux_tense_\*): Percentage distribution in the sentence of a set of inflectional features (*Mood, Number, Person, Tense and Verbal Form*) over lexical verbs and auxiliaries of each sentence.
+
+## Verbal Predicate Structure
+
+- **Distribution of verbal heads** (*vb_head_per_sent*): Number of verbal heads in the sentence, corresponding to the number of main or subordinate clauses co-occurring in it.
+
+- **Distribution of verbal roots** (*dep_dist_root*): Percentage of verbal roots out of the total sentence roots.
+
+- **Verb arity** (*verb_arity*): Average number of dependency links sharing the same verbal head per sentence, excluding punctuation and copula dependencies.
+
+## Global and Local Parsed Tree Structures
+
+- **Syntactic tree depth** (*parse_depth*): Maximum syntactic tree depth extracted for the sentence, i.e., the longest path in terms of dependency links from the root of the dependency tree to some leaf.
+
+- **Average and maximum length of dependency links** (*avg_links_len, max_links_len*)
+
+- **Number and average length of prepositional chains** (*n_prep_chains, prep_chain_len*), with the latter expressed in number of tokens.
+
+- **Subject-object ordering** (*subj_pre, subj_post, obj_pre, obj_post*): Relative order of the subject and object arguments with respect to the verbal root of the clause in the sentence.
+
+## Syntactic Relations
+
+- **Distribution of dependency relations** (*dep_dist_\**): Percentage distribution of the 37 universal relations in the UD dependency annotation scheme.
+
+## Subordination Phenomena
+
+- **Distribution of main and subordinate clauses** (*princ_prop_dist, sub_prop_dist*): Percentage distribution of main vs subordinate clauses in the sentence.
+
+- **Relative ordering of subordinates** (*sub_pre, sub_post*): As for subjects and objects, whether the subordinate occurs in pre-verbal or post-verbal position in the sentence.
+
+- **Average length of embedded subordinates** (*sub_chain_len*): Average length of subordinate clauses recursively embedded into each other to form a subordinate chain.
+
+Readers are referred to the original paper by @brunato-etal-2020-profiling and the Profiling-UD webpage^[[http://linguistic-profiling.italianlp.it](http://linguistic-
+profiling.italianlp.it)] for additional details on linguistic features.
+
+# Precisions on Eye-tracking Metrics and Preprocessing {#app:et-metrics}
+
+```{r echo=FALSE}
+et_mappings <- data.frame(
+  Rows = c("First fix. dur. (FFD)", "First pass dur. (FPD)", "Fix. prob. (FXP)", "Fix. count (FXC)", "Tot. fix. Dur. (TFD)", "Tot. Regres. Dur. (TRD)"),
+  Dundee = c("First_fix_dur", "First_pass_dur", "Fix_prob", "nFix", "Tot_fix_dur", "Tot_regres_from_dur"),
+  GECO = c("FIRST_FIXATION_DURATION", "GAZE_DURATION", "¬ WORD_SKIP", "FIXATION_COUNT", "TOT_READ_TIME", "GO_PAST - SEL._GO_PAST"),
+  ZuCo = c("FFD", "GD", "FXC > 0", "FXC", "TRT", "GPT - GD")
+)
+et_mappings %>% kable(booktabs=T, caption="Eye-tracking mappings from dataset-specific fields to the shared set of metrics.", col.names = c("Metrics", "Dundee", "GECO", "ZuCo 1 & 2"), label = "et-mappings", align = c('l', rep('c', times=3)), linesep = "") %>% 
+  kable_styling(font_size = 11, latex_options="hold_position") %>%
+  row_spec(0, bold=T)
+```
+
+[Univocal gaze metrics conversion]{.custompar} Table \@ref(tab:et-mappings) present the conversion scheme used to obtain a unified set of eye-tracking metrics from different corpora annotations. This method follows closely the approach adopted by @hollenstein-zhang-2019-entity. While the mapping is straightforward for shared metrics, the TRD metric needs to be computed for GECO and ZuCo. For GECO, the difference between go-past time (i.e. total time elapsed between the first access of a word boundary and the first access of subsequent words, including regressions) and its selective variant (i.e. go-past time only relative to the specific word, without accounting for regressions) gives an exact conversion to regression duration. Instead, in the ZuCo case, an approximate conversion using gaze duration (i.e. first pass duration) instead of selective go-past time is used since selective go-past time is not provided. ZuCo's TRD estimate should be deemed an upper bound for regressions' duration since gaze duration is always smaller than the selective go-past time when regressions are present and is precisely equal to it in the complete absence of regressions.
+
+[Averaging across participants]{.custompar} Gaze metrics are averaged across participants for all experiments of this thesis work. Metrics missing for some participants due to skipping are replaced with the lowest recorded value across participants for that word before averaging. This procedure is preferred to zero-filling missing values since the latter produces significant drops in metrics associated with tokens skipped by multiple participants, making averaged values inconsistent with empirical observations.
+
+# Multi-task Token-level Regression for Gaze Metrics Prediction {#app:et-modeling}
+
+\vspace{-3em}
+
+(ref:multitask-et-caption) Multi-task token-level regression on eye-tracking annotations. Preceding punctuation is removed (1), and the sentence is tokenized while keeping track of non-initial tokens (2). Embeddings are fed to the ALBERT model (3), and non-initial representations are masked to ensure a one-to-one mapping between labels and predictions (4). Finally, task-specific prediction heads are used to predict gaze metrics in a multitask setting with hard parameter sharing (5).
+
+```{r out.width= "100%", fig.align='center', fig.cap="(ref:multitask-et-caption)", label="multitask-et", echo=FALSE, fig.pos="H"}
+include_graphics('figures/appendix/A3_multitask_et.png', auto_pdf=TRUE)
+```
+
+A multitask token-level regression fine-tuning approach was adopted throughout this study to predict eye-tracking metrics using neural language models. This novel approach's choice stems from the fact that the regression task of predicting gaze metrics is inherently word-based given the granularity of eye-tracking annotations and that different gaze metrics provide complementary viewpoints over multiple stages of cognitive processing and can as such be modeled more precisely in a multitask learning setting. Figure \@ref(fig:multitask-et) presents the model's training and inference procedure, closely matching other approaches used to train neural language models for sequence tagging tasks like POS tagging and named entity recognition. 
+
+The most defining detail in the procedure is the need to preserve an exact one-to-one mapping between input words and gaze metrics annotations, which is non-trivial in light of subword tokenization approaches that represent nowadays the *de facto* standard for training modern neural language models. To enforce such mapping, two steps are taken. First, all initial punctuation (e.g. the open parenthesis before *processing* in Figure \@ref(fig:multitask-et) example) is removed to make the initial subword token for that word (i.e. the one preceded by whitespace) equal to the word's first characters. Then, all non-initial subword tokens are identified in step (2), and their respective embeddings are masked in step (4) before passing the remaining initial embeddings (one per whitespace-tokenized word at this point, as for gaze metrics) to the set of prediction heads responsible for inferring individual gaze metrics. While this procedure can be regarded as suboptimal since not all learned representations are used for prediction, it is essential to remember that all the embeddings produced by attention-based neural language models are contextualized and encode information about the entire sentence and surrounding context to some extent. In this sense, initial token embeddings can be trained in this setting to predict gaze metrics relative to the whole word, effectively bypassing the issues about information loss raised by the masking procedure.
+
+Another important detail in the training and inference procedure is the standardization of metrics, which plays a key role in this setup due to the different ranges of different metrics (e.g. fixation probability is always defined in the interval $[0,1]$, while gaze durations are integers in the scale of hundreds/thousands of milliseconds). Specifically, considering the set $X$ of values assumed by a specific metric for all tokens in the eye-tracking datasets, the average $\mu_X$ and standard deviation $\sigma_X$ of those values are computed, and each value is transformed as:
+\begin{equation}
+X_i' = \frac{X_i - \mu_X}{\sigma_X}
+\end{equation}
+to produce a new range $X'$ with average equal to $0$ and standard deviation equal to $1$. Predicted values are then reconverted to the original scale as $X_i = (X'_i \cdot \sigma_X) + \mu_X$ when performing inference, and training and testing metrics are computed on each metric's original scale.
+
+[Spillover concatenation]{.custompar} Cognitive processing literature reports evidence of reading times for a word being shaped not only by the predictability of the word itself but also by the predictability of the words that precede it [@smith-levy-2013-effect] in what is commonly referred to as the *spillover effect* [@mitchell-1984-evaluation]. The existence of spillover has important implications in the context of this gaze metrics prediction approach since the embeddings for a single word may not contain enough information to predict the influence of preceding tokens in shaping reading behaviors. Notably, @schjindel-linzen-2020-single include the surprisal of the three previous words in a mixed-effect model used to estimate a surprisal-to-reading-times conversion coefficient. While it can be hypothesized that in this approach, the usage of contextualized word embeddings can automatically account for this type of interaction, the effect of leveraging preceding tokens for the current token's metric prediction is assessed to confirm this hypothesis. A new procedure defined as *spillover concatenation* is introduced for this purpose, in which token embeddings are augmented by performing a rolling concatenation of the $n$ preceding embeddings before feeding the final representation to prediction heads. Initial tokens are padded with $0$ vectors to match the fixed size defined by embedding size and the $n$ parameter. For example, using spillover concatenation with $n = 3$ within a BERT model with a hidden size of 768 involves having prediction heads taking input size of $768 \cdot (3 + 1) = 3072$, the size of the token embedding for which gaze metrics should be predicted plus the size of the three preceding token embeddings. In this way, information about preceding tokens is explicitly included at prediction time.
+
+Figure \@ref(fig:spillover-training) shows the validation losses during training for the two models used in the experiments of Chapter \@ref(chap:ex3) with their counterparts using spillover concatenation. Model performances are not positively influenced by introducing the concatenation technique and remain very similar for both architectures.
+
+(ref:spillover-training-caption) Validation total loss for GPT-2 and ALBERT over a split of the eye-tracking merged corpora with and without spillover concatenation. Model predictive performances were comparable across training and testing for the two models.
+
+```{r out.width= "70%", fig.align='center', fig.cap="(ref:spillover-training-caption)", label="spillover-training", echo=FALSE}
+include_graphics('figures/appendix/A3_spillover_training.png')
+```
+
+[Model performances]{.custompar} Table \@ref(tab:multitask-et-scores) presents the test performances of ALBERT and GPT-2 models trained with and without the spillover concatenation approach on the merge of all eye-tracking corpora. The top two rows present descriptive statistics about extreme values, the mean and standard deviation in annotations averaged across participants for each metric. It is interesting to observe that the maximum value observed for first pass duration (FPD) is higher than the one for total fixation duration (TFD). While this situation would not be possible in practice due to first pass duration being included in total reading times, it reminds us about the approximate nature of our filling-and-averaging procedure described in Appendix \@ref(app:et-metrics). Comparing results to those of Table \@ref(tab:ex1-results), where gaze metrics were modeled at the sentence level, we observe much worse results in terms of explained variance for both models: while fixations and first pass duration (FXC, FXP, FPD) are generally well modeled, worse results are obtained for first and total fixation durations (FFD, TFD), and in particular for the duration of regression (TRD). These results can be attributed to the merging of different corpora that, being annotated by different participants, present very different properties, as shown in Table \@ref(tab:et-corpora) and Figure \@ref(fig:surprisal-ratios). While on the one hand, this choice harms modeling performances, on the other hand, it provides us with more representative results for the general setting. 
+
+```{r echo=FALSE}
+multitask_et_scores <- data.frame(
+  Rows = c("min-max value", "$\\mu|\\sigma$ statistics", "ALBERT", "ALBERT Spillover", "GPT-2", "GPT-2 Spillover"),
+  ffd_score = c("$0-986$", "$162|50$", "$41_{78}|.33$", "$41_{78}|.33$", "$44_{83}|.23$", "$43_{83}|.26$"),
+  fpd_score = c("$0-2327$", "$188|86$", "$61_{121}|.50$", "$61_{122}|.50$", "$68_{136}|.37$", "$68_{135}|.37$"),
+  fxp_score = c("$0-1$", "$.56|.27$", "$.17_{.32}|.60$", "$.17_{.33}|.60$", "$.18_{.35}|.56$", "$.19_{.35}|.50$"),
+  fxc_score = c("$0-8.18$", "$.85|.53$", "$.31_{.62}|.66$", "$.31_{.62}|.66$", "$.36_{.70}|.54$", "$.36_{.70}|.54$"),
+  tfd_score = c("$0-1804$", "$206|87$", "$65_{132}|.44$", "$65_{132}|.44$", "$74_{149}|.28$", "$73_{146}|.30$"),
+  trd_score = c("$0-4055$", "$90|122$", "$110_{207}|.19$", "$110_{208}|.19$", "$115_{222}|.11$", "$116_{220}|.10$")
+)
+multitask_et_scores %>% kable(booktabs=T, caption="Descriptive statistics and model performances for the merged eye-tracking training corpus. Model scores are in format $\\text{RMSE}_{\\text{MAX}}|R^2$, where RMSE is the root-mean-squared error and MAX is the max error for model predictions.", col.names = c("", "FFD", "FPD", "FXP", "FXC", "TFD", "TRD"), label = "multitask-et-scores", align = c('l', rep('c', times=6)), linesep = "", escape=FALSE) %>% 
+  kable_styling(font_size = 11, latex_options="hold_position") %>%
+  row_spec(0, bold=T) %>%
+  row_spec(2, hline_after = T) %>% 
+  row_spec(4, hline_after = T)
+```
+
+In general, better performances are observed for the masked language model ALBERT, suggesting the importance of having access to bidirectional context for gaze metrics prediction. Results present additional evidence supporting the superfluity of the spillover concatenation procedure, which was henceforth dropped in the context of Chapters \@ref(chap:ex2) and \@ref(chap:ex3)'s experiments. Although good scores in terms of average and maximal errors are observed for all metrics, the relatively low $R^2$ seem to suggest that large margins of improvement are still available in the context of gaze metrics predictions with neural language models.
+
+# Intra-model Similarity for All Models {#app:intra-sim}
+
+\vspace{-5em}
+
+(ref:intra-pc-caption-latex) Intra-model RSA and PWCCA scores across layers' combinations for the ALBERT model fine-tuned on perceived complexity (**PC**). Layer -1 is the last layer before prediction heads.
+
+(ref:intra-pc-caption-gitbook) Intra-model RSA (left) and PWCCA (right) scores across layers' combinations for the ALBERT model fine-tuned on perceived complexity annotations (**PC**) using the [CLS] token (top), the all-token average (middle), and all tokens (bottom) representations. Layer -1 corresponds to the last layer before prediction heads.
+
+```{r out.width = "48%", fig.align='center', fig.cap=ifelse(knitr::is_html_output(), "(ref:intra-pc-caption-gitbook)", "(ref:intra-pc-caption-latex)"), label="intra-pc", echo=FALSE, fig.ncol=2, fig.subcap=c('RSA score, CLS token', 'PWCCA distance, CLS token', "RSA score, tokens' average", "PWCCA distance, tokens' average", 'RSA score, all tokens', 'PWCCA distance, all tokens'), fig.pos="H"}
+include_graphics('figures/appendix/A4_rsa_intra_cls_pc.png')
+include_graphics('figures/appendix/A4_pwcca_intra_cls_pc.png')
+include_graphics('figures/appendix/A4_rsa_intra_mean_pc.png')
+include_graphics('figures/appendix/A4_pwcca_intra_mean_pc.png')
+include_graphics('figures/appendix/A4_rsa_intra_tokens_pc.png')
+include_graphics('figures/appendix/A4_pwcca_intra_tokens_pc.png')
+```
+
+(ref:intra-et-caption-latex) Intra-model RSA and PWCCA scores across layers' combinations for the ALBERT model fine-tuned in parallel on gaze metrics (**ET**). Layer -1 corresponds to the last layer before prediction heads.
+
+(ref:intra-et-caption-gitbook) Intra-model RSA (left) and PWCCA (right) scores across layers' combinations for the ALBERT model fine-tuned in parallel on gaze metrics (**ET**) using the [CLS] token (top), the all-token average (middle), and all tokens (bottom) representations. Layer -1 corresponds to the last layer before prediction heads.
+
+```{r out.width = "50%", fig.align='center', fig.cap=ifelse(knitr::is_html_output(), "(ref:intra-et-caption-gitbook)", "(ref:intra-et-caption-latex)"), label="intra-et", echo=FALSE, fig.ncol=2, fig.subcap=c('RSA score, CLS token', 'PWCCA distance, CLS token', "RSA score, tokens' average", "PWCCA distance, tokens' average", 'RSA score, all tokens', 'PWCCA distance, all tokens')}
+include_graphics('figures/appendix/A4_rsa_intra_cls_et.png')
+include_graphics('figures/appendix/A4_pwcca_intra_cls_et.png')
+include_graphics('figures/appendix/A4_rsa_intra_mean_et.png')
+include_graphics('figures/appendix/A4_pwcca_intra_mean_et.png')
+include_graphics('figures/appendix/A4_rsa_intra_tokens_et.png')
+include_graphics('figures/appendix/A4_pwcca_intra_tokens_et.png')
+```
+
+(ref:intra-ra-caption-latex) Intra-model RSA and PWCCA scores across layers' combinations for the ALBERT model fine-tuned on readability assessment annotations (**RA**). Layer -1 corresponds to the last layer before prediction heads.
+
+(ref:intra-ra-caption-gitbook) Intra-model RSA (left) and PWCCA (right) scores across layers' combinations for the ALBERT model fine-tuned on readability assessment annotations (**RA**) using the [CLS] token (top), the all-token average (middle), and all tokens (bottom) representations. Layer -1 corresponds to the last layer before prediction heads.
+
+```{r out.width = "50%", fig.align='center', fig.cap=ifelse(knitr::is_html_output(), "(ref:intra-ra-caption-gitbook)", "(ref:intra-ra-caption-latex)"), label="intra-ra", echo=FALSE, fig.ncol=2, fig.subcap=c('RSA score, CLS token', 'PWCCA distance, CLS token', "RSA score, tokens' average", "PWCCA distance, tokens' average", 'RSA score, all tokens', 'PWCCA distance, all tokens')}
+include_graphics('figures/appendix/A4_rsa_intra_cls_ra.png')
+include_graphics('figures/appendix/A4_pwcca_intra_cls_ra.png')
+include_graphics('figures/appendix/A4_rsa_intra_mean_ra.png')
+include_graphics('figures/appendix/A4_pwcca_intra_mean_ra.png')
+include_graphics('figures/appendix/A4_rsa_intra_tokens_ra.png')
+include_graphics('figures/appendix/A4_pwcca_intra_tokens_ra.png')
+```
+
+# Gaze Metrics Predictions for Garden Path Sentences {#app:garden-paths-et}
+
+(ref:gpt2-npz-ambig-et-caption) Average GPT2-ET gaze metrics predictions for the "NP/Z Ambiguity with Verb Transitivity" SyntaxGym test suite. Bars show 95% confidence intervals. Units are in ms for durations, % for FXP, and raw counts for FXC.
+
+```{r out.width= "100%", fig.align='center', fig.cap="(ref:gpt2-npz-ambig-et-caption)", label="gpt2-npz-ambig-et", echo=FALSE, fig.pos="H"}
+include_graphics('figures/appendix/A5_gpt2_npz_ambig_et.png')
+```
+
+(ref:gpt2-npz-obj-et-caption) Average GPT2-ET gaze metrics predictions for the "NP/Z Ambiguity with Overt Object" SyntaxGym test suite. Bars show 95% confidence intervals. Units are in ms for durations, % for FXP, and raw counts for FXC.
+
+```{r out.width= "100%", fig.align='center', fig.cap="(ref:gpt2-npz-obj-et-caption)", label="gpt2-npz-obj-et", echo=FALSE}
+include_graphics('figures/appendix/A5_gpt2_npz_obj_et.png')
+```
+
+(ref:gpt2-mvrr-et-caption) Average GPT2-ET gaze metrics predictions for the "MV/RR Ambiguity" SyntaxGym test suite. Bars show 95% confidence intervals. Units are in ms for durations, % for FXP, and raw counts for FXC.
+
+```{r out.width= "100%", fig.align='center', fig.cap="(ref:gpt2-mvrr-et-caption)", label="gpt2-mvrr-et", echo=FALSE}
+include_graphics('figures/appendix/A5_gpt2_mvrr_et.png')
+```
+
+# Reproducibility and Environmental Impact {#app:params}
+
+```{r echo=FALSE}
+train_params <- data.frame(
+  Rows = c("fine-tuning", "granularity", "freeze LM $w$", "weighted loss", "CV folds", "early stopping", "training epochs", "patience", "evaluation steps"),
+  ex1PC = c("standard", "sent.", "❌", "-", 5, "✅", 15, 5, 20),
+  ex1ET = c("MTL", "sent.", "❌", "✅", 5, "✅", 15, 5, 40),
+  ex1Probe = c("MTL", "sent.", "✅", "❌", 5, "❌", 5, "-", "-"),
+  ex2PC = c("standard", "sent.", "❌", "-", "-", "✅", 15, 5, 20),
+  ex2ET = c("MTL", "word", "❌", "❌", "-", "✅", 15, 5, 100),
+  ex2RA = c("standard", "sent.", "❌", "-", "-", "✅", 15, 5, 80),
+  ex3ALBERT = c("MTL", "word", "❌", "❌", "-", "✅", 15, 5, 100),
+  ex3GPT2 = c("MTL", "word", "❌", "❌", "-", "✅", 15, 5, 100)
+)
+train_params %>% kable(
+  booktabs=T, 
+  caption="Variable training parameters used in the experiments of this study. MTL stands for multitask learning.",
+  col.names = c("", "PC", "ET", "Probes", "PC", "ET", "RA", "ALBERT", "GPT-2"),
+  label = "train-params",
+  align = c('l', rep('c', times=9)),
+  linesep = "",
+  escape=FALSE) %>% 
+  kable_styling(font_size = 11, latex_options="hold_position") %>%
+    column_spec(4, border_right = T) %>%
+    column_spec(7, border_right = T) %>%
+    add_header_above(c(" ", "Chapter 3" = 3, "Chapter 4" = 3, "Chapter 5" = 2), bold=TRUE)
+```
+
+[Tools]{.custompar} Experiments were executed on a Ubuntu 18.04 LTS server, using a NVIDIA K40 GPU with 12GB RAM and CUDA 10.1. Relevant Python libraries used throughout the study with their respective versions are: 🤗 `transformers 2.11.0` for accessing pre-trained Transformer language models, `farm 0.4.5` for multitask learning, `torch 1.3.0` as a backed for deep learning, and `syntaxgym 0.5.3` for Chapter \@ref(chap:ex3) experiments. Python 3.6.3 was used for all training scripts. A custom adaptation of the Oxforddown template was used for this thesis.^[https://github.com/AI-Student-Society/thesisdown-it] Code for reproducibility purposes is available at the address [https://github.com/gsarti/interpreting-complexity](https://github.com/gsarti/interpreting-complexity).
+
+[Model Training]{.custompar} Table \@ref(tab:train-params) present the set of variable training parameters used in all the experiments of this study. Besides those, a set of fixed parameters was also used: all experiments were performed using a batch size of 32 observations, a maximum sequence length of 128 tokens, a linear training schedule with one-tenth of total steps used as warmup steps, the *AdamW* optimizer [@loshchilov-hutter-2019-decoupled] with weight decay equal to $0.01$, and a learning rate of $10^{-5}$. No hyperparameter search was performed due to time limitations.
+
+[Tokenization]{.custompar} All tokenizers used in the experiments used cased text and were based respectively on the SentencePiece approach [@kudo-richardson-2018-sentencepiece] for ALBERT and a custom version of Byte-Pair Encoding tokenization [@sennrich-etal-2016-neural] with token-like whitespaces for GPT-2. Default `AlbertTokenizer` and `GPT2Tokenizer` classes available in the 🤗 `transformers` library with pretrained tokenizers were used for this purpose. The vocabulary used by those had size 30'000 for ALBERT and 50'257 for GPT-2, including special tokens.
+
+[Architecture]{.custompar} The default parameters for the 🤗 `transformers` checkpoints of ALBERT and GPT-2 (specifically, `albert-base-v2` and `gpt2` in the Model Hub) were used for this study. Concretely, this means embeddings and hidden sizes of 128 and 3072 for ALBERT and tied embedding-hidden size of 768 for GPT-2, 12 transformer blocks using 12 heads for multi-head self-attention each, and a smoothed variant of the Gaussian Error Linear Unit (GELU) as nonlinearity [@hendrycks-gimpel-2016-gaussian]. GPT-2 has an embedding and attention dropout rate of 0.1 and a layer normalization [@ba-etal-2016-layer] epsilon of $10^{-5}$, while ALBERT employs a classifier dropout rate of 0.1 and a layer normalization epsilon of $10^{-12}$.
+
+[CO2 Emissions Related to Experiments]{.custompar} Experiments were conducted using the private infrastructure of the ItaliaNLP Lab^[[https://www.italianlp.it](https://www.italianlp.it)] at the Institute for Computational Linguistics "A. Zampolli" (ILC-CNR) in Pisa, which has an estimated carbon efficiency of 0.321 kgCO$_2$eq/kWh [@moro2018electricity]. A cumulative of roughly 100 hours of computation was performed on a Tesla K40 GPU (TDP of 245W). Total emissions are estimated to be 7.86 kgCO$_2$eq. Estimations were conducted using the Machine Learning Impact Calculator^[[https://mlco2.github.io/impact#compute](https://mlco2.github.io/impact#compute)] presented in @lacoste2019quantifying.
+
+In-detail reports of all experimental runsre produced automatically using the MLFlow^[https://mlflow.org/] tool and are available at the following address: [https://public-mlflow.deepset.ai/#/experiments/99](https://public-mlflow.deepset.ai/#/experiments/99).
+
+
+
+
